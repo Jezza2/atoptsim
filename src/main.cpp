@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
     world.add(std::make_unique<sphere>(position(0.0, 0.0, -1.0), 0.5));
     world.add(std::make_unique<sphere>(position(0.0, -100.5, -1.0), 100));
 
-    camera cam;
+    const camera cam;
 
     const size_t img_width = rainbow.width();
     const size_t img_height = rainbow.height();
