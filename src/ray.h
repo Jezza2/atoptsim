@@ -7,6 +7,8 @@
 class ray
 {
 public:
+    ray() = default;
+
     ray(const position& origin, const direction& dir)
     :   _origin(origin)
     ,   _dir(dir)

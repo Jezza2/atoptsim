@@ -1,11 +1,15 @@
 #include "sphere.h"
 
 #include <cmath>
+#include <stdexcept>
 
-sphere::sphere(const position& centre, real_t radius)
+sphere::sphere(const position& centre, real_t radius, const material* mat)
 :   _centre(centre)
 ,   _radius(radius)
+,   _material(mat)
 {
+    if (_material == nullptr)
+        std::runtime_error("No material set for sphere");
 }
 
 bool sphere::hit(const ray& r, real_t t_min, real_t t_max, hit_record& rec) const
@@ -34,6 +38,7 @@ bool sphere::hit(const ray& r, real_t t_min, real_t t_max, hit_record& rec) cons
     rec.p = r.at(root);
     direction outward_normal = (rec.p - _centre) / _radius;
     rec.set_face_normal(r, outward_normal);
+    rec.mat = _material;
 
     return true;
 }

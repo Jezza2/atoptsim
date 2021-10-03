@@ -119,6 +119,20 @@ public:
         return *this /= length();
     }
 
+    template <typename FuncT>
+    constexpr vec_t<T> transform(FuncT&& func)
+    {
+        return { func(x), func(y), func(z) };
+    }
+
+    constexpr bool near_zero() const
+    {
+        constexpr real_t s = 1e-8;
+        return std::fabs(x) < s
+                && std::fabs(y) < s
+                && std::fabs(z) < s;
+    }
+
     // Allow explicit casts to other types
     template <vec_type M>
     explicit operator vec3<M, T>() const
@@ -146,6 +160,12 @@ template <vec_type N, typename T, typename U>
 constexpr vec3<N, T> operator-(vec3<N, T> lhs, const vec3<N, U>& rhs)
 {
     return lhs -= rhs;
+}
+
+template <vec_type N, typename T, typename U>
+constexpr vec3<N, T> operator*(vec3<N, T> lhs, const vec3<N, U>& rhs)
+{
+    return { lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*rhs.z };
 }
 
 template <vec_type N, typename T, typename U>

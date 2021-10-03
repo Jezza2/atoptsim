@@ -9,13 +9,15 @@
 #include "vec3.h"
 
 class ray;
+class material;
 
 struct hit_record
 {
     position p;
     direction normal;
-    real_t t;
+    real_t t = 0.0;
     bool front_face;
+    const material* mat = nullptr;
 
     void set_face_normal(const ray& r, const direction& outward_normal);
 };

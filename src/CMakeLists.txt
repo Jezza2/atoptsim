@@ -6,6 +6,7 @@ add_executable(rainbow_simulator
     sphere.cpp
     camera.cpp
     hittable.cpp
+    material.cpp
 )
 
 target_compile_options(rainbow_simulator PRIVATE -O3 -Wall)

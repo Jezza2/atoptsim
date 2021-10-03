@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ostream>
+#include <utility>
 
 #include "vec3.h"
 #include "real_type.h"
@@ -29,6 +30,13 @@ public:
     std::size_t height() const;
 
     void scale_brightness(real_t sf);
+
+    template <typename FuncT>
+    void transform(FuncT&& func)
+    {
+        for (colour& p : _pixels)
+            p = p.transform(std::forward<FuncT>(func));
+    }
 
 private:
     image() = default; // For copy and swap
