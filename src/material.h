@@ -14,6 +14,8 @@ public:
             const hit_record& rec,
             colour& attenuation,
             ray& scattered) const = 0;
+
+    virtual colour emitted() const { return { 0.0, 0.0, 0.0 }; }
 };
 
 class lambertian : public material
@@ -65,6 +67,23 @@ private:
     static real_t reflectance(real_t cosine, real_t ref_idx);
 
     real_t _ir; // Index of Refraction
+};
+
+class light : public material
+{
+public:
+    explicit light(const colour& c) : _c(c) {}
+
+    bool scatter(
+            const ray& r_in,
+            const hit_record& rec,
+            colour& attenuation,
+            ray& scattered) const override;
+
+    colour emitted() const override { return _c; };
+
+private:
+    colour _c;
 };
 
 #endif

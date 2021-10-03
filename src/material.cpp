@@ -68,3 +68,12 @@ real_t dielectric::reflectance(real_t cosine, real_t ref_idx)
     const real_t r2 = r0*r0;
     return r2 + (1.0 - r2) * std::pow((1 - cosine), 5);
 }
+
+bool light::scatter(
+        const ray& r_in,
+        const hit_record& rec,
+        colour& attenuation,
+        ray& scattered) const
+{
+    return false;
+}

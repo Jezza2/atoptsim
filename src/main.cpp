@@ -23,27 +23,37 @@ const lambertian centre(colour(0.7, 0.3, 0.3));
 const metal left(colour(0.8, 0.8, 0.8), 0.0);
 const metal right(colour(0.8, 0.6, 0.2), 1.0);
 const dielectric glass(1.5);
+const dielectric water(1.33);
+const light sun(colour(0.0, 1.0, 1.0));
 
 }
 
 colour ray_colour(const ray& r, const hittable& h, int depth)
 {
+    constexpr colour black(0.0, 0.0, 0.0);
+
     if (depth <= 0)
-        return { 0.0, 0.0, 0.0 };
+        return black;
 
     hit_record rec;
     if (h.hit(r, 0.001, infinity, rec))
     {
-        ray scattered;
-        colour attenuation;
-        if (rec.mat && rec.mat->scatter(r, rec, attenuation, scattered))
-            return attenuation * ray_colour(scattered, h, depth - 1);
-        return { 0.0, 0.0, 0.0 };
+        if (rec.mat)
+        {
+            const colour emitted = rec.mat->emitted();
+            
+            ray scattered;
+            colour attenuation;
+            if (rec.mat->scatter(r, rec, attenuation, scattered))
+                return emitted + attenuation * ray_colour(scattered, h, depth - 1);
+            
+            return emitted;
+        }
+
+        return black;
     }
 
-    const direction unit_dir = normalise(r.dir());
-    const real_t t = 0.5 * (unit_dir.y + 1.0);
-    return (1.0 - t) * colour(1, 1, 1) + t * colour(0.5, 0.7, 1.0);
+    return black;
 }
 
 std::string progress_bar(int pc_progress)
@@ -67,20 +77,29 @@ std::string progress_bar(int pc_progress)
 int main(int argc, char* argv[])
 {
     const real_t aspect_ratio = 16.0 / 9.0;
-    image rainbow(600, aspect_ratio);
+    const real_t width = 600.0;
+    const real_t height = width / aspect_ratio;
+    image rainbow(static_cast<std::size_t>(width), aspect_ratio);
 
     hittable_list world;
-    world.add(std::make_unique<sphere>(position(0.0, -100.5, -1.0), 100, &materials::ground));
-    world.add(std::make_unique<sphere>(position(0.0, 0.0, -1.0), 0.5, &materials::centre));
-    world.add(std::make_unique<sphere>(position(-1.0, 0.0, -1.0), 0.5, &materials::left));
-    world.add(std::make_unique<sphere>(position( 1.0, 0.0, -1.0), 0.5, &materials::glass));
-    world.add(std::make_unique<sphere>(position( 1.0, 0.0, -1.0), -0.45, &materials::glass));
+    world.add(std::make_unique<sphere>(position(0.0, 0.0, 10.0), 1, &materials::sun));
+
+    for (int i = 0; i < static_cast<int>(width); i += 10)
+    {
+        for (int j = 0; j < static_cast<int>(height); j += 10)
+        {
+            real_t x = -1.0*aspect_ratio + (2.0*aspect_ratio * (static_cast<real_t>(i)/width));
+            real_t y = -1.0 + (2.0 * (static_cast<real_t>(j)/height));
+            world.add(std::make_unique<sphere>(position(x, y, -1.0), 0.1, &materials::water));
+        }
+    }
+
     const camera cam;
 
     const size_t img_width = rainbow.width();
     const size_t img_height = rainbow.height();
-    const int samples_per_pixel = 500;
-    const int max_depth = 100;
+    const int samples_per_pixel = 100;
+    const int max_depth = 10;
 
     int prev_progress = -1;
     for (size_t j = 0; j < img_height; ++j)
@@ -90,7 +109,7 @@ int main(int argc, char* argv[])
             std::cerr << "\rProgress: " << progress_bar(pc_progress) << ' ' << pc_progress << '%';
         prev_progress = pc_progress;
 
-        #pragma omp parallel for
+        // #pragma omp parallel for
         for (size_t i = 0; i < img_width; ++i)
         {
             for (int k = 0; k < samples_per_pixel; ++k)
